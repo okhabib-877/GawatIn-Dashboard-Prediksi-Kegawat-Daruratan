@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GawatIn - Advanced Triage Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        
+        :root { 
+            --blue-sky: #87CEEB;       
+            --blue-deep: #007bff;      
+            --yellow-bright: #FFD700;  
+            --red-blood: #dc3545;      
+            
+            --white: #ffffff; 
+            --text-dark: #2c3e50; 
+            --text-gray: #64748b; 
+            --bg-gray: #f8fafc; 
+            --border-color: #e2e8f0;
+            --check-green: #28a745;
+            
+            --bg-yellow-soft: #fffbea; 
+            --bg-dark-gray: #2c3e50;   
+        }
+        
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            background-color: var(--white);
+            color: var(--text-dark);
+            scroll-behavior: smooth;
+        }
+
+        /* ================= HEADER UTAMA ================= */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(51, 65, 85, 0.95); 
+            backdrop-filter: blur(10px);
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #475569; z-index: 1000;
+        }
+
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #e2e8f0; font-weight: 700; font-size: 15px; transition: 0.2s; }
+        .nav-links a:hover { color: var(--blue-sky); }
+
+        .btn-nav-primary {
+            background-color: var(--yellow-bright); color: #8b6508 !important; padding: 10px 24px;
+            border-radius: 8px; font-weight: 800 !important; border: 1px solid #e6c200; transition: 0.2s;
+        }
+        .btn-nav-primary:hover { background-color: #e6c200; transform: translateY(-2px); }
+
+        /* ================= SECTION 1: HERO ================= */
+        .hero-section {
+            padding-top: 120px; padding-bottom: 60px; min-height: 70vh; display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle at top right, rgba(135,206,235,0.2) 0%, var(--bg-gray) 100%);
+        }
+
+        /* PERUBAHAN: Penambahan efek dimensi (3D) pada container banner */
+        .slider-container {
+            width: 90%; max-width: 1200px; height: 450px; border-radius: 20px; overflow: hidden;
+            position: relative; 
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25), inset 0 0 0 2px rgba(255, 255, 255, 0.6); 
+            border: none;
+            background: white;
+            transform: perspective(1000px) translateZ(0);
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .slider-container:hover {
+            box-shadow: 0 35px 70px rgba(0, 123, 255, 0.2), inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+            transform: perspective(1000px) translateZ(0) translateY(-5px);
+        }
+
+        .slider-wrapper { display: flex; height: 100%; width: 100%; transition: transform 0.5s ease-in-out; }
+        .slide {
+            min-width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; box-sizing: border-box; background: transparent; padding: 0; position: relative;
+        }
+        /* PERUBAHAN: Efek shadow di bagian dalam slide agar gambar lebih berdimensi */
+        .slide::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.15); pointer-events: none;
+        }
+
+        .slider-btn {
+            position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none;
+            color: white; width: 45px; height: 45px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 10; 
+            transition: 0.2s; backdrop-filter: blur(5px);
+        }
+        .slider-btn:hover { background: rgba(0,0,0,0.6); color: var(--white); }
+        .prev-btn { left: 20px; } .next-btn { right: 20px; }
+
+        .slider-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;}
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(0,0,0,0.2); cursor: pointer; transition: 0.2s; border: 2px solid white; }
+        .dot.active { background: var(--blue-deep); transform: scale(1.2);}
+
+        /* ================= SECTION 2: TEST KEGAWATDARURATAN ================= */
+        .test-section { padding: 80px 5%; background-color: var(--white); display: flex; justify-content: center; align-items: center; }
+
+        .welcome-container { 
+            background-color: var(--white); width: 100%; max-width: 1100px; border-radius: 20px; 
+            display: flex; align-items: center; gap: 40px;
+        }
+
+        .welcome-text { flex: 1.2; padding: 20px 0; }
+        .welcome-text h1 { font-size: 38px; font-weight: 900; color: var(--text-dark); line-height: 1.2; margin-bottom: 15px; letter-spacing: -1px;}
+        .welcome-text h1 span { color: var(--blue-deep); position: relative;}
+        .welcome-text h1 span::after { content: ''; position: absolute; width: 100%; height: 6px; background: var(--yellow-bright); bottom: 5px; left: 0; z-index: -1; border-radius: 10px; }
+        
+        .check-list-main { list-style: none; padding: 0; margin: 20px 0 35px 0; }
+        .check-list-main li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; font-size: 16px; color: var(--text-gray); line-height: 1.5; }
+        .check-list-main li i { color: var(--check-green); margin-top: 4px; font-size: 18px; }
+
+        .welcome-image { flex: 0.8; text-align: center; }
+        .welcome-image img { width: 100%; max-width: 350px; border-radius: 20px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.1)); }
+
+        .btn-start { 
+            background: var(--red-blood); color: var(--white); padding: 16px 35px; border-radius: 8px; font-size: 16px; font-weight: 800; 
+            border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.2);
+        }
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(220, 53, 69, 0.3); background-color: #c82333; }
+
+        /* ================= SECTION 3: INFORMASI ACUITY ================= */
+        .info-section { padding: 100px 5%; background-color: var(--bg-yellow-soft); border-top: 1px solid var(--border-color); }
+        .info-header { text-align: center; margin-bottom: 60px; }
+        .info-header h2 { font-size: 36px; font-weight: 900; color: var(--text-dark); margin-bottom: 10px; letter-spacing: -0.5px;}
+
+        .acuity-container { max-width: 1000px; margin: 0 auto; }
+        .acuity-program { display: flex; align-items: center; gap: 60px; margin-bottom: 70px; }
+        .acuity-program:nth-child(even) { flex-direction: row-reverse; }
+
+        .acuity-img-box {
+            flex: 0 0 350px; height: 250px; border-radius: 20px; display: flex; justify-content: center; align-items: center;
+            font-size: 90px; box-shadow: 0 15px 30px rgba(0,0,0,0.05); background-color: white; 
+        }
+        .acuity-text { flex: 1; text-align: left; }
+        .acuity-text h3 { font-size: 28px; font-weight: 900; margin: 0 0 15px 0; }
+        
+        .acuity-check-list { list-style: none; padding: 0; margin: 0 0 25px 0; }
+        .acuity-check-list li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 16px; color: var(--text-dark); line-height: 1.6; }
+        .acuity-check-list li i { color: var(--check-green); margin-top: 4px; font-size: 16px; }
+
+        .badge-time-large { display: inline-block; padding: 12px 24px; border-radius: 8px; font-weight: 800; font-size: 15px; color: white; letter-spacing: 0.5px;}
+
+        .img-ac1 { border: 2px solid var(--red-blood); color: var(--red-blood); } .text-ac1 { color: var(--red-blood); } .bg-ac1 { background: var(--red-blood); }
+        .img-ac2 { border: 2px solid #fd7e14; color: #fd7e14; } .text-ac2 { color: #fd7e14; } .bg-ac2 { background: #fd7e14; }
+        .img-ac3 { border: 2px solid #b8860b; color: #b8860b; } .text-ac3 { color: #b8860b; } .bg-ac3 { background: #d4b200; }
+        .img-ac4 { border: 2px solid #28a745; color: #28a745; } .text-ac4 { color: #28a745; } .bg-ac4 { background: #28a745; }
+        .img-ac5 { border: 2px solid var(--blue-deep); color: var(--blue-deep); } .text-ac5 { color: var(--blue-deep); } .bg-ac5 { background: var(--blue-deep); }
+
+        /* ================= SECTION 4: TENTANG KAMI ================= */
+        .about-section { padding: 100px 5%; background-color: var(--bg-dark-gray); border-top: 1px solid var(--border-color);}
+        
+        .about-container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+
+        .about-text h2 { font-size: 36px; font-weight: 900; color: var(--white); margin-top: 0; margin-bottom: 20px; letter-spacing: -0.5px;}
+        .about-text p { font-size: 16px; color: #cbd5e1; line-height: 1.8; margin-bottom: 20px;} 
+        
+        .highlight-box { background: rgba(255, 255, 255, 0.05); padding: 20px 25px; border-radius: 12px; border-left: 6px solid var(--blue-sky); margin-bottom: 30px; }
+        .highlight-box p { margin: 5px 0; color: var(--white); font-weight: 800; font-size: 15px;}
+        .highlight-box span { color: var(--yellow-bright); } 
+
+        /* PERUBAHAN: Logo Mitra Berwarna & Efek Membesar */
+        .about-logos { display: flex; gap: 30px; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);}
+        .about-logos img { 
+            height: 65px; object-fit: contain; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease; 
+            padding: 5px; border-radius: 8px;
+        }
+        .about-logos img:hover { 
+            transform: scale(1.15); 
+            filter: drop-shadow(0px 5px 10px rgba(255, 255, 255, 0.2)); 
+        }
+
+        /* PERUBAHAN: Efek Foto Berdimensi / Light Effect */
+        .about-image { position: relative; }
+        .about-image img { 
+            width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 20px; 
+            box-shadow: 0 0 50px rgba(135, 206, 235, 0.3), 0 25px 50px rgba(0,0,0,0.6); 
+            position: relative; z-index: 2; border: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Pseudo-element kuning dihapus sepenuhnya */
+
+        /* ================= MODAL & POPUP (FORM TRIASE) ================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .assessment-card {
+            background: var(--white); width: 100%; max-width: 650px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            overflow: hidden; transform: translateY(20px); transition: transform 0.4s; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color);
+        }
+        .modal-overlay.active .assessment-card { transform: translateY(0); }
+
+        .modal-header { background: var(--bg-gray); padding: 25px 30px; position: relative; border-bottom: 1px solid var(--border-color); }
+        .modal-header h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+        .modal-header h2 i { color: var(--blue-deep); }
+        .close-modal { position: absolute; right: 25px; top: 25px; color: var(--text-gray); font-size: 20px; cursor: pointer; border: none; background: transparent; transition: 0.2s;}
+        .close-modal:hover { color: var(--red-blood); transform: scale(1.1);}
+
+        .progress-bar { height: 6px; background-color: var(--border-color); width: 100%; position: absolute; bottom: 0; left: 0; }
+        .progress-fill { height: 100%; background: var(--blue-deep); width: 0%; transition: width 0.4s ease-out; }
+
+        .modal-body { padding: 40px; min-height: 250px; }
+        .question-section { display: none; animation: slideUp 0.3s ease; text-align: center; }
+        .question-section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .question-title { color: var(--text-dark); font-size: 22px; font-weight: 800; margin-bottom: 25px; letter-spacing: -0.5px;}
+        
+        .input-group { margin: 0 auto; max-width: 320px; text-align: left; }
+        .input-group input {
+            width: 100%; padding: 15px 20px; font-size: 20px; font-weight: 700; font-family: 'Nunito', sans-serif;
+            border: 2px solid var(--border-color); background: var(--bg-gray); border-radius: 12px; outline: none; transition: 0.3s;
+            box-sizing: border-box; text-align: center; color: var(--text-dark);
+        }
+        .input-group input:focus { border-color: var(--blue-deep); background: var(--white); box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1); }
+        .input-hint { display: block; text-align: center; font-size: 13px; color: var(--text-gray); margin-top: 10px; font-weight: 700; }
+        .skip-hint { display: block; font-size: 13px; color: #d4b200; margin-top: 5px; font-weight: 800; text-align: center; background: #fff8d6; padding: 5px 10px; border-radius: 8px; width: fit-content; margin: 8px auto 0;}
+
+        .navigation { display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px;}
+        .nav-btn { padding: 12px 25px; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; border: none; transition: 0.3s; font-family: 'Nunito', sans-serif; }
+        .btn-prev { background-color: var(--white); color: var(--text-gray); border: 2px solid var(--border-color); }
+        .btn-prev:hover { background-color: var(--bg-gray); color: var(--text-dark); }
+        .btn-next { background: var(--blue-deep); color: var(--white); box-shadow: 0 8px 15px rgba(0, 123, 255, 0.2);}
+        .btn-next:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(0, 123, 255, 0.3);}
+        .btn-next:disabled { background: var(--border-color); cursor: not-allowed; box-shadow: none; color: var(--text-gray);}
+
+        /* Result Styles */
+        .status-badge { display: inline-block; padding: 12px 30px; border-radius: 12px; font-size: 22px; font-weight: 900; color: var(--white); margin: 15px 0 25px 0; letter-spacing: 0.5px;}
+        .status-1 { background: var(--red-blood); } 
+        .status-2 { background: #fd7e14; } 
+        .status-3 { background: #d4b200; } 
+        .status-4 { background: #28a745; } 
+        .status-5 { background: var(--blue-deep); } 
+
+        .advice-box { text-align: left; background: var(--bg-gray); padding: 20px; border-radius: 12px; margin-top: 25px; border: 1px solid var(--border-color); }
+        .advice-box h4 { margin-top: 0; color: var(--blue-deep); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 16px;}
+        .advice-box ul { margin: 0; padding-left: 20px; color: var(--text-dark); line-height: 1.7; font-size: 15px;}
+
+        .prob-container { margin-top: 25px; padding: 20px; background: var(--white); border-radius: 12px; text-align: left; border: 1px solid var(--border-color);}
+        .prob-container h4 { margin: 0 0 15px 0; font-size: 15px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
+        .prob-item { display: flex; align-items: center; margin-bottom: 12px; gap: 15px;}
+        .prob-label { width: 65px; font-size: 13px; font-weight: 800; color: var(--text-gray);}
+        .prob-bar-bg { flex: 1; height: 10px; background: var(--border-color); border-radius: 5px; overflow: hidden;}
+        .prob-bar-fill { height: 100%; border-radius: 5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);}
+        .prob-val { width: 45px; font-size: 13px; font-weight: 900; text-align: right;}
+
+        .action-container { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
+        .btn-action { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-weight: 800; text-decoration: none; cursor: pointer; border: none; transition: 0.3s; font-size: 15px; font-family: 'Nunito', sans-serif; }
+        .btn-hospital { background-color: var(--red-blood); color: white; }
+        .btn-hospital:hover { background-color: #b91c1c; transform: translateY(-2px); }
+        .btn-outline { background-color: var(--white); color: var(--text-dark); border: 2px solid var(--border-color); }
+        .btn-outline:hover { background-color: var(--bg-gray); }
+
+        /* ================= GAWATIN AI CHAT WIDGET & ANIMASI DENYUT ================= */
+        /* PERUBAHAN: Tombol Chat menggunakan warna cerah dan glow berlapis (Eye-Catching) */
+        .chat-fab {
+            position: fixed; bottom: 30px; right: 30px; 
+            width: 75px; height: 75px;
+            background: linear-gradient(135deg, #ffffff, #f0f8ff); border: 2px solid var(--border-color); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4), 0 0 15px rgba(255, 215, 0, 0.5); cursor: pointer; z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse-fab-enhanced 2s infinite; 
+        }
+        .chat-fab:hover { transform: scale(1.1); border-color: var(--blue-deep); animation: none; }
+
+        @keyframes pulse-fab-enhanced {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.6), 0 0 15px rgba(255, 215, 0, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 0 20px rgba(0, 123, 255, 0), 0 0 25px rgba(255, 215, 0, 0.8); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0), 0 0 15px rgba(255, 215, 0, 0.6); transform: scale(1); }
+        }
+
+        .chat-widget {
+            position: fixed; bottom: 95px; right: 30px; width: 380px; height: 480px; max-height: 75vh;
+            background: var(--white); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: none; flex-direction: column; z-index: 1001; overflow: hidden;
+            border: 1px solid var(--border-color); animation: slideUpChat 0.3s ease;
+        }
+        .chat-widget.active { display: flex; }
+        @keyframes slideUpChat { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .chat-widget-header {
+            background: #ffffff; color: var(--text-dark); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .chat-widget-header .close-btn {
+            background: transparent; border: none; color: var(--text-gray); font-size: 18px; cursor: pointer; transition: 0.2s;
+        }
+        .chat-widget-header .close-btn:hover { color: var(--red-blood); transform: scale(1.1); }
+
+        .chat-widget-body {
+            flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-gray);
+            display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
+        }
+        .chat-msg {
+            max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word;
+        }
+        .chat-msg.bot {
+            background: white; align-self: flex-start; color: var(--text-dark);
+            border: 1px solid var(--border-color); border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .chat-msg.user {
+            background: var(--blue-deep); color: white; align-self: flex-end;
+            border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(0,123,255,0.2);
+        }
+        .chat-typing { font-style: italic; color: var(--text-gray); font-size: 13px; background: transparent; border: none; box-shadow: none; padding: 0 16px;}
+
+        .chat-widget-input {
+            display: flex; padding: 15px; background: white; border-top: 1px solid var(--border-color); gap: 10px; align-items: center;
+        }
+        .chat-widget-input input {
+            flex: 1; padding: 12px 18px; border: 1px solid var(--border-color); border-radius: 24px;
+            outline: none; font-family: 'Nunito', sans-serif; font-size: 14px; background: var(--bg-gray);
+        }
+        .chat-widget-input input:focus { border-color: var(--blue-deep); background: white; }
+        .chat-widget-input button {
+            background: var(--blue-deep); color: white; border: none; width: 45px; height: 45px;
+            border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.2s; font-size: 16px;
+        }
+        .chat-widget-input button:hover { background: #0056b3; transform: scale(1.05); }
+
+        @media (max-width: 768px) {
+            .header { padding: 15px 20px; }
+            .nav-links a.hide-mobile { display: none; }
+            .welcome-container, .about-container { flex-direction: column; text-align: center; }
+            .check-list-main li { justify-content: center; text-align: left;}
+            .welcome-image img { width: 80%; }
+            .acuity-program, .acuity-program:nth-child(even) { flex-direction: column; text-align: left; gap: 30px;}
+            .acuity-img-box { width: 100%; height: 180px; flex: auto; }
+            .slider-container { height: 350px; }
+            .chat-widget { width: 90%; right: 5%; bottom: 100px; height: 500px; }
+        }
+/* Efek mengambang lucu untuk bakteri */
+.floating-bakteri {
+    position: absolute; 
+    width: 80px;
+    z-index: 0;           /* Diletakkan di bawah konten utama */
+    opacity: 1;         /* Dibuat agak transparan */
+    pointer-events: none;
+    animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+    </style>
+</head>
+<body>
+
+    <!-- SECTION 0: NAVBAR HEADER -->
+    <header class="header">
+        <div class="logo" style="display: flex; align-items: center;">
+            <!-- PERUBAHAN: Logo diperbesar ke 65px -->
+            <img src="{{ url_for('static', filename='logo fiks.png') }}" alt="GawatIn Logo" style="height: 40px; object-fit: contain; filter: drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.8));">
+        </div>
+        <nav class="nav-links">
+            <a href="#hero" class="hide-mobile">Beranda</a>
+            <a href="#info" class="hide-mobile">Info Acuity</a>
+            <a href="#about" class="hide-mobile">Tentang Kami</a>
+            <a href="#test" class="btn-nav-primary">Cek Kondisi</a>
+        </nav>
+    </header>
+
+    <!-- SECTION 1: HERO / BOXED BANNER SLIDER -->
+    <section id="hero" class="hero-section">
+        <div class="slider-container">
+            <div class="slider-wrapper" id="slider-wrapper">
+                <div class="slide slide-1">
+                    <img src="{{ url_for('static', filename='Kenali lebih cepat, Tangani dengan tepat.png') }}" alt="Poster Edukasi GawatIn 1" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="slide slide-2">
+                    <img src="{{ url_for('static', filename='gawatin ai banner.png') }}" alt="Poster Edukasi GawatIn 2" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+            </div>
+            
+            <button class="slider-btn prev-btn" onclick="moveSlide(-1)"><i class="fas fa-chevron-left"></i></button>
+            <button class="slider-btn next-btn" onclick="moveSlide(1)"><i class="fas fa-chevron-right"></i></button>
+            
+            <div class="slider-dots">
+                <div class="dot active" onclick="currentSlide(0)"></div>
+                <div class="dot" onclick="currentSlide(1)"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: TEST KEGAWATDARURATAN -->
+    <section id="test" class="test-section">
+        <div class="welcome-container">
+            <div class="welcome-text">
+                <h1>Analisis Gejala & Kegawatan <span>Lebih Cepat</span></h1>
+                <ul class="check-list-main">
+                    <li><i class="fas fa-check-square"></i> Diagnosis awal akurat bertenaga Machine Learning.</li>
+                    <li><i class="fas fa-check-square"></i> Tetap bekerja cerdas walau parameter tensi/SpO2 dikosongkan.</li>
+                    <li><i class="fas fa-check-square"></i> Menampilkan rekomendasi waktu penanganan RS yang presisi.</li>
+                </ul>
+                <button class="btn-start" onclick="openAssessmentModal()">
+                    Mulai Uji Kondisi <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="welcome-image">
+                <img src="{{ url_for('static', filename='foto.png') }}" alt="Ilustrasi Medis">
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: INFORMASI ACUITY -->
+    <section id="info" class="info-section">
+        <div class="info-header">
+            <h2>Pahami 5 Tingkat Kegawatdaruratan</h2>
+        </div>
+        
+        <div class="acuity-container">
+            <div class="acuity-program">
+                <div class="acuity-img-box img-ac1"><i class="fas fa-procedures"></i></div>
+                <div class="acuity-text">
+                    <h3 class="text-ac1">Level 1 (Resusitasi)</h3>
+                    <ul class="acuity-check-list">
+                        <li><i class="fas fa-check-circle"></i> Kondisi mengancam nyawa secara langsung.</li>
+                        <li><i class="fas fa-check-circle"></i> Membutuhkan intervensi medis seketika itu juga.</li>
+                        <li><i class="fas fa-check-circle"></i> Contoh kasus: Henti jantung, pendarahan hebat tak terkendali.</li>
+                    </ul>
+                    <div class="badge-time-large bg-ac1">Waktu Respons: Segera (0 Menit)</div>
+                </div>
+            </div>
+
+            <div class="acuity-program">
+                <div class="acuity-img-box img-ac2"><i class="fas fa-ambulance"></i></div>
+                <div class="acuity-text">
+                    <h3 class="text-ac2">Level 2 (Emergent)</h3>
+                    <ul class="acuity-check-list">
+                        <li><i class="fas fa-check-circle"></i> Risiko tinggi memburuk dengan sangat cepat.</li>
+                        <li><i class="fas fa-check-circle"></i> Disertai rasa nyeri hebat yang tidak tertahankan.</li>
+                        <li><i class="fas fa-check-circle"></i> Contoh kasus: Nyeri dada berat, sesak napas akut.</li>
+                    </ul>
+                    <div class="badge-time-large bg-ac2">Waktu Respons: Maks 10 Menit</div>
+                </div>
+            </div>
+
+            <div class="acuity-program">
+                <div class="acuity-img-box img-ac3"><i class="fas fa-stethoscope"></i></div>
+                <div class="acuity-text">
+                    <h3 class="text-ac3">Level 3 (Urgent)</h3>
+                    <ul class="acuity-check-list">
+                        <li><i class="fas fa-check-circle"></i> Kondisi akut yang butuh banyak sumber daya RS.</li>
+                        <li><i class="fas fa-check-circle"></i> Tanda-tanda vital (seperti nadi/suhu) masih relatif stabil.</li>
+                        <li><i class="fas fa-check-circle"></i> Contoh kasus: Patah tulang tertutup, asma sedang.</li>
+                    </ul>
+                    <div class="badge-time-large bg-ac3">Waktu Respons: Maks 30 Menit</div>
+                </div>
+            </div>
+
+            <div class="acuity-program">
+                <div class="acuity-img-box img-ac4"><i class="fas fa-user-injured"></i></div>
+                <div class="acuity-text">
+                    <h3 class="text-ac4">Level 4 (Less Urgent)</h3>
+                    <ul class="acuity-check-list">
+                        <li><i class="fas fa-check-circle"></i> Kondisi stabil secara fisiologis.</li>
+                        <li><i class="fas fa-check-circle"></i> Hanya membutuhkan satu jenis intervensi ringan/sederhana.</li>
+                        <li><i class="fas fa-check-circle"></i> Contoh kasus: Luka robek kecil, demam tanpa komplikasi.</li>
+                    </ul>
+                    <div class="badge-time-large bg-ac4">Waktu Respons: Maks 60 Menit</div>
+                </div>
+            </div>
+
+            <div class="acuity-program">
+                <div class="acuity-img-box img-ac5"><i class="fas fa-pills"></i></div>
+                <div class="acuity-text">
+                    <h3 class="text-ac5">Level 5 (Non Urgent)</h3>
+                    <ul class="acuity-check-list">
+                        <li><i class="fas fa-check-circle"></i> Masalah klinis sangat ringan atau bersifat kronis.</li>
+                        <li><i class="fas fa-check-circle"></i> Tidak membutuhkan intervensi darurat sama sekali.</li>
+                        <li><i class="fas fa-check-circle"></i> Contoh kasus: Batuk pilek biasa, sekadar ganti perban.</li>
+                    </ul>
+                    <div class="badge-time-large bg-ac5">Waktu Respons: Maks 120 Menit</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: TENTANG KAMI -->
+    <section id="about" class="about-section">
+        <div class="about-container">
+            <div class="about-text">
+                <h2>Tentang Pengembang</h2>
+                <p>Dashboard <strong>GawatIn</strong> ini merupakan inovasi teknologi yang dikembangkan khusus untuk mempermudah akses triase medis awal bagi masyarakat luas, menggunakan pendekatan <i>Machine Learning</i>.</p>
+                
+                <div class="highlight-box">
+                    <p>Dikembangkan oleh: <span>3 Mahasiswa IPB University</span></p>
+                    <p>Ketua Tim: <span>Najla Rayya F.</span></p>
+                    <p>Program: <span>Proyek Satria Data</span></p>
+                </div>
+
+                <p>Kami berharap sistem ini dapat berkontribusi dalam mempercepat penanganan gawat darurat di Indonesia.</p>
+
+                <!-- PERUBAHAN: Logo Mitra dengan gambar berwarna & scale hover -->
+                <div class="about-logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg" alt="Pemerintahan Indonesia">
+                    <img src="{{ url_for('static', filename='logo kemenkes.png') }}" alt="Kementerian Kesehatan RI">
+                </div>
+            </div>
+            
+            <div class="about-image">
+                <img src="{{ url_for('static', filename='ipb.jpg') }}" alt="Foto Tim Pengembang IPB">
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MODAL UJIAN (FORM TRIASE) ================= -->
+    <div class="modal-overlay" id="assessment-modal">
+        <div class="assessment-card">
+            <div class="modal-header">
+                <h2><i class="fas fa-clipboard-list"></i> Evaluasi Medis</h2>
+                <button class="close-modal" onclick="closeAssessmentModal()"><i class="fas fa-times"></i></button>
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            </div>
+
+            <div class="modal-body">
+                <div class="question-section active" id="step-1">
+                    <div class="question-title">Umur (Tahun)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-age" min="0" max="120" placeholder="Misal: 45" onkeyup="validateInput('age', 0, 120)">
+                        <span class="input-hint">Rentang valid: 0 - 120 Tahun</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-2">
+                    <div class="question-title">Suhu Tubuh (°C)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-temperature" min="30" max="45" step="0.1" placeholder="Misal: 36.5" onkeyup="validateInput('temperature', 30, 45)">
+                        <span class="input-hint">Rentang valid: 30.0 - 45.0 °C</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-3">
+                    <div class="question-title">Detak Jantung (BPM)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-heartrate" min="30" max="250" placeholder="Misal: 85" onkeyup="validateInput('heartrate', 30, 250)">
+                        <span class="input-hint">Rentang valid: 30 - 250 BPM</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-4">
+                    <div class="question-title">Pernapasan (napas/menit)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-resprate" min="5" max="60" placeholder="Misal: 18" onkeyup="validateInput('resprate', 5, 60)">
+                        <span class="input-hint">Rentang valid: 5 - 60 per menit</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-5">
+                    <div class="question-title">Saturasi Oksigen (SpO2 %)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-o2sat" min="50" max="100" placeholder="Misal: 98" onkeyup="validateInput('o2sat', 50, 100)">
+                        <span class="input-hint">Rentang valid: 50 - 100 %</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-6">
+                    <div class="question-title">Tensi Darah Atas (Sistolik)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-sbp" min="50" max="250" placeholder="Misal: 120" onkeyup="validateInput('sbp', 50, 250)">
+                        <span class="input-hint">Rentang valid: 50 - 250 mmHg</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-7">
+                    <div class="question-title">Tensi Darah Bawah (Diastolik)</div>
+                    <div class="input-group">
+                        <input type="number" id="input-dbp" min="30" max="150" placeholder="Misal: 80" onkeyup="validateInput('dbp', 30, 150)">
+                        <span class="input-hint">Rentang valid: 30 - 150 mmHg</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <div class="question-section" id="step-8">
+                    <div class="question-title">Skala Nyeri (0-10)</div>
+                    <div style="font-size: 14px; color: var(--text-dark); margin: -10px auto 20px auto; max-width: 420px; text-align: left; line-height: 1.6; background: var(--bg-gray); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <strong>Panduan:</strong><br>
+                        • <strong>0</strong> : Tidak ada nyeri.<br>
+                        • <strong>1-3</strong> : Nyeri ringan (masih bisa ditahan).<br>
+                        • <strong>4-6</strong> : Nyeri sedang (butuh obat pereda).<br>
+                        • <strong>7-10</strong>: Nyeri sangat berat (tak tertahankan).
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="input-pain" min="0" max="10" placeholder="Misal: 4" onkeyup="validateInput('pain', 0, 10)">
+                        <span class="input-hint">Rentang valid: 0 - 10</span>
+                        <span class="skip-hint">Kosongkan jika tidak tahu</span>
+                    </div>
+                </div>
+
+                <!-- HALAMAN HASIL PREDIKSI (STEP 9) -->
+                <div class="question-section" id="step-9" style="text-align: center;">
+                    <div id="loading" style="display:none; margin: 40px 0;">
+                        <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--blue-deep);"></i><br><br>
+                        <span style="font-weight: 700; color: var(--text-gray);">Memproses Analisis AI...</span>
+                    </div>
+                    
+                    <div id="result-content" style="display: none;">
+                        <div id="main-diagnosis-area">
+                            <h4 style="margin:0; color:var(--text-gray); font-size:13px; font-weight: 800; text-transform: uppercase;">HASIL DIAGNOSIS SEMENTARA</h4>
+                            <div id="result-badge" class="status-badge"></div>
+                            <div id="recommendation-box" style="font-size: 16px; margin-bottom: 10px; font-weight:800; color: var(--text-dark);"></div>
+                        </div>
+                        
+                        <div class="prob-container" id="prob-container">
+                            <h4><i class="fas fa-chart-pie" style="color: var(--blue-deep);"></i> Rincian Probabilitas AI</h4>
+                            <div id="prob-list"></div>
+                        </div>
+
+                        <div class="insight-box" id="insight-box"></div>
+                        
+                        <div id="advice-container" class="advice-box">
+                            <h4><i class="fas fa-hospital-alt"></i> Rekomendasi Waktu RS:</h4>
+                            <div id="handling-steps"></div>
+                        </div>
+
+                        <div class="action-container">
+                            <a id="btn-hospital" href="https://maps.google.com/?q=rumah+sakit" target="_blank" class="btn-action btn-hospital">
+                                <i class="fas fa-map-marker-alt"></i> Cari RS Terdekat
+                            </a>
+                            <button onclick="bukaChatbotDariHasil()" class="btn-action" style="background-color: var(--blue-deep); color: white;">
+                                <i class="fas fa-robot"></i> Tanya GawatIn AI
+                            </button>
+                            <button onclick="resetAssessmentForm()" class="btn-action btn-outline">
+                                <i class="fas fa-redo-alt"></i> Uji Ulang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="navigation" id="nav-container">
+                    <button class="nav-btn btn-prev" id="btn-prev" onclick="prevStep()" style="visibility: hidden;">Kembali</button>
+                    <button class="nav-btn btn-next" id="btn-next" onclick="nextStep()">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= WIDGET GAWATIN AI ================= -->
+    <div class="chat-fab" onclick="toggleChatbot()">
+        <!-- PERUBAHAN: FAB Icon menggunakan logo saja.png yang ditempatkan presisi di tengah -->
+        <img src="{{ url_for('static', filename='logo saja.png') }}" alt="GawatIn Bot" style="width: 45px; height: 45px; object-fit: contain; margin-top: 3px;">
+    </div>
+
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-widget-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="{{ url_for('static', filename='gawatin ai.png') }}" alt="GawatIn AI Logo" style="height: 32px; object-fit: contain;">
+            </div>
+            <button class="close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-widget-body" id="chatBox">
+            <div class="chat-msg bot">Halo! Aku GawatIn AI. Di sini kamu bisa cerita apa aja tentang keluhan kesehatan atau ketidaknyamanan yang lagi kamu rasain. Yuk, cerita, bagian mana yang rasanya nggak enak?</div>
+        </div>
+        <div class="chat-widget-input">
+            <input type="text" id="userInput" placeholder="Ketik keluhanmu di sini..." onkeypress="handleKeyPress(event)">
+            <button onclick="kirimPesan()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- ================= SCRIPT JAVASCRIPT ================= -->
+    <script>
+        // Logika Slider Banner
+        let slideIndex = 0;
+        const totalSlides = 2;
+
+        function moveSlide(n) { showSlide(slideIndex += n); }
+        function currentSlide(n) { showSlide(slideIndex = n); }
+
+        function showSlide(n) {
+            let wrapper = document.getElementById("slider-wrapper");
+            let dots = document.getElementsByClassName("dot");
+            
+            if (n >= totalSlides) { slideIndex = 0; }
+            if (n < 0) { slideIndex = totalSlides - 1; }
+            
+            wrapper.style.transform = `translateX(-${slideIndex * 100}%)`;
+            
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            dots[slideIndex].className += " active";
+        }
+
+        setInterval(() => { moveSlide(1); }, 5000);
+
+        // Logika Utama Asesmen Medis
+        let currentStep = 1;
+        const assessmentSteps = 8; 
+        
+        let patientData = {
+            age: "", temperature: "", heartrate: "", resprate: "", 
+            o2sat: "", sbp: "", dbp: "", pain: ""
+        };
+
+        const acuityColors = { 1: '#dc3545', 2: '#fd7e14', 3: '#d4b200', 4: '#28a745', 5: '#007bff' };
+        const acuityNames = {
+            1: { name: 'ACUITY 1 (RESUSITASI)', color: acuityColors[1] },
+            2: { name: 'ACUITY 2 (EMERGENT)', color: acuityColors[2] },
+            3: { name: 'ACUITY 3 (URGENT)', color: acuityColors[3] },
+            4: { name: 'ACUITY 4 (LESS URGENT)', color: acuityColors[4] },
+            5: { name: 'ACUITY 5 (NON URGENT)', color: acuityColors[5] }
+        };
+
+        function openAssessmentModal() { document.getElementById('assessment-modal').classList.add('active'); updateProgress(); }
+        function closeAssessmentModal() { document.getElementById('assessment-modal').classList.remove('active'); }
+
+        function validateInput(key, min, max) {
+            const inputField = document.getElementById(`input-${key}`);
+            const valStr = inputField.value.trim();
+            const val = parseFloat(valStr);
+            
+            if (valStr === "") {
+                patientData[key] = ""; inputField.style.borderColor = "var(--border-color)"; document.getElementById('btn-next').disabled = false;
+            } else if (!isNaN(val) && val >= min && val <= max) {
+                patientData[key] = val; inputField.style.borderColor = "var(--blue-deep)"; document.getElementById('btn-next').disabled = false;
+            } else {
+                patientData[key] = null; inputField.style.borderColor = "var(--red-blood)"; document.getElementById('btn-next').disabled = true;
+            }
+        }
+
+        function updateProgress() { document.getElementById('progress').style.width = `${(currentStep / assessmentSteps) * 100}%`; }
+
+        function nextStep() {
+            if (currentStep < assessmentSteps) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                
+                updateProgress();
+                document.getElementById('btn-prev').style.visibility = 'visible';
+                
+                const keys = Object.keys(patientData);
+                document.getElementById('btn-next').disabled = (patientData[keys[currentStep-1]] === null);
+                if (currentStep === assessmentSteps) { document.getElementById('btn-next').innerHTML = 'Analisis AI'; }
+            } else if (currentStep === assessmentSteps) {
+                submitToModel();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                
+                updateProgress();
+                document.getElementById('btn-next').innerHTML = 'Selanjutnya';
+                
+                const keys = Object.keys(patientData);
+                document.getElementById('btn-next').disabled = (patientData[keys[currentStep-1]] === null);
+                if (currentStep === 1) { document.getElementById('btn-prev').style.visibility = 'hidden'; }
+            }
+        }
+
+        async function submitToModel() {
+            document.getElementById('nav-container').style.display = 'none';
+            document.getElementById(`step-${assessmentSteps}`).classList.remove('active');
+            document.getElementById('step-9').classList.add('active'); 
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result-content').style.display = 'none';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patientData)
+                });
+                
+                if (!response.ok) { throw new Error(`Koneksi server gagal (${response.status})`); }
+                const result = await response.json();
+                if (result.error) { throw new Error(result.error); }
+
+                displayResult(result.acuity, result.all_probabilities, result.is_incomplete, result.hypotheticals);
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result-badge').className = 'status-badge status-1';
+                document.getElementById('result-badge').innerText = 'ERROR KONEKSI';
+                document.getElementById('recommendation-box').innerHTML = `Gagal memuat prediksi. Pastikan server berjalan. Error: ${error.message}`;
+                document.getElementById('main-diagnosis-area').style.display = 'block';
+                document.getElementById('result-content').style.display = 'block';
+            }
+        }
+
+        function displayResult(acuity, all_probs, is_incomplete, hypotheticals) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result-content').style.display = 'block';
+            
+            const mainArea = document.getElementById('main-diagnosis-area');
+            const probContainer = document.getElementById('prob-container');
+            const probList = document.getElementById('prob-list');
+            const badge = document.getElementById('result-badge');
+            const rec = document.getElementById('recommendation-box');
+            const adviceContainer = document.getElementById('advice-container');
+            const handlingSteps = document.getElementById('handling-steps');
+            const insightBox = document.getElementById('insight-box');
+
+            const saranPenanganan = {
+                1: 'Pasien harus segera mendapat tindakan di IGD (Waktu Respons: 0 menit / Segera).',
+                2: 'Pasien harus berada di IGD maksimal dalam 10 menit.',
+                3: 'Pasien harus tiba di IGD maksimal dalam 30 menit.',
+                4: 'Kondisi stabil. Datang ke klinik/RS maksimal 60 menit jika gejala menetap.',
+                5: 'Kondisi non-urgensi. Bisa kunjungi faskes dalam 2 jam (120 menit).'
+            };
+
+            if (all_probs) {
+                probContainer.style.display = 'block';
+                let probHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    const probValue = all_probs[`Acuity ${i}`] || 0;
+                    const barColor = acuityColors[i];
+                    probHTML += `
+                        <div class="prob-item">
+                            <span class="prob-label">Acuity ${i}</span>
+                            <div class="prob-bar-bg">
+                                <div class="prob-bar-fill" style="width: 0%; background-color: ${barColor};" data-target="${probValue}%"></div>
+                            </div>
+                            <span class="prob-val" style="color: ${barColor};">${probValue}%</span>
+                        </div>
+                    `;
+                }
+                probList.innerHTML = probHTML;
+
+                setTimeout(() => {
+                    const bars = document.querySelectorAll('.prob-bar-fill');
+                    bars.forEach(bar => { bar.style.width = bar.getAttribute('data-target'); });
+                }, 100);
+            } else { probContainer.style.display = 'none'; }
+
+            if (is_incomplete) {
+                mainArea.style.display = 'none'; adviceContainer.style.display = 'none';
+                insightBox.style.display = 'block'; probContainer.style.display = 'none'; 
+                
+                let insightHTML = `<h5 style="color: var(--text-dark); margin-top: 0; margin-bottom: 15px; font-size: 14px;"><i class="fas fa-project-diagram"></i> Prediksi Alternatif AI</h5>`;
+                
+                hypotheticals.forEach(h => {
+                    const hAcuity = acuityNames[h.acuity]; const hSaran = saranPenanganan[h.acuity];
+                    insightHTML += `
+                    <div style="margin-bottom: 12px; padding: 15px; background: var(--bg-gray); border: 1px solid var(--border-color); border-radius: 8px; border-left: 5px solid ${hAcuity.color};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="color: ${hAcuity.color}; font-weight:900; font-size: 13px;">${hAcuity.name}</span>
+                            <strong style="color: var(--text-dark); font-size: 13px;">Peluang: ${h.confidence}%</strong>
+                        </div>
+                        <p style="margin: 0 0 10px 0; color: var(--text-gray); font-size: 14px;">Bisa terjadi jika disertai rasa <b>${h.symptoms}</b>.</p>
+                        <div style="font-size: 13px; color: var(--text-dark); display: flex; gap: 8px;">
+                            <i class="fas fa-clock" style="color: var(--blue-deep); margin-top: 2px;"></i> <span>${hSaran}</span>
+                        </div>
+                    </div>`;
+                });
+                
+                insightHTML += `<p style="font-size: 13px; color: #d4b200; margin-top: 15px; text-align: center; font-weight: 700;"><i class="fas fa-exclamation-triangle"></i> Karena ada data penting yang kosong, AI menyusun skenario alternatif.</p>`;
+                insightBox.innerHTML = insightHTML;
+
+            } else {
+                mainArea.style.display = 'block'; adviceContainer.style.display = 'block'; insightBox.style.display = 'none';
+                
+                badge.className = `status-badge status-${acuity}`; badge.innerText = acuityNames[acuity].name;
+                
+                let recText = '';
+                if (acuity === 1) recText = 'Ancaman jiwa langsung.'; else if (acuity === 2) recText = 'Risiko tinggi memburuk cepat.';
+                else if (acuity === 3) recText = 'Kondisi akut memerlukan penanganan.'; else if (acuity === 4) recText = 'Kondisi stabil, risiko rendah.';
+                else recText = 'Masalah klinis ringan / kronis.';
+
+                rec.innerHTML = recText; handlingSteps.innerHTML = `<ul><li>${saranPenanganan[acuity]}</li></ul>`;
+            }
+        }
+
+        function resetAssessmentForm() {
+            currentStep = 1;
+            patientData = { age: "", temperature: "", heartrate: "", resprate: "", o2sat: "", sbp: "", dbp: "", pain: "" };
+            
+            const fields = ['age', 'temperature', 'heartrate', 'resprate', 'o2sat', 'sbp', 'dbp', 'pain'];
+            fields.forEach(field => {
+                const element = document.getElementById(`input-${field}`);
+                element.value = ""; element.style.borderColor = "var(--border-color)";
+            });
+
+            document.getElementById('step-9').classList.remove('active'); 
+            document.getElementById('step-1').classList.add('active');
+            
+            document.getElementById('btn-prev').style.visibility = 'hidden';
+            document.getElementById('btn-next').disabled = false;
+            document.getElementById('btn-next').innerHTML = 'Selanjutnya';
+            document.getElementById('nav-container').style.display = 'flex';
+            updateProgress();
+        }
+
+        function toggleChatbot() {
+            const chatWidget = document.getElementById('chatWidget');
+            chatWidget.classList.toggle('active');
+        }
+
+        function bukaChatbotDariHasil() {
+            closeAssessmentModal(); 
+            const chatWidget = document.getElementById('chatWidget');
+            if (!chatWidget.classList.contains('active')) {
+                chatWidget.classList.add('active');
+            }
+            const inputField = document.getElementById('userInput');
+            inputField.value = "Halo, aku baru saja melakukan cek triase di GawatIn dan butuh konsultasi...";
+            inputField.focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') kirimPesan();
+        }
+
+        async function kirimPesan() {
+            const inputField = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const pesan = inputField.value.trim();
+            
+            if (!pesan) return;
+
+            chatBox.innerHTML += `<div class="chat-msg user">${pesan}</div>`;
+            inputField.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            chatBox.innerHTML += `<div class="chat-msg bot chat-typing" id="${loadingId}">Bentar yaa GawatIn AI mikir dulu...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: pesan })
+                });
+                
+                const data = await response.json();
+                
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                
+                if (data.status === "success" && Array.isArray(data.reply)) {
+                    for (const bubbleTeks of data.reply) {
+                        chatBox.innerHTML += `<div class="chat-msg bot">${bubbleTeks}</div>`;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        await new Promise(resolve => setTimeout(resolve, 1000)); 
+                    }
+                } else {
+                    chatBox.innerHTML += `<div class="chat-msg bot">Terjadi kesalahan format data dari server GawatIn AI.</div>`;
+                }
+            } catch (error) {
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                chatBox.innerHTML += `<div class="chat-msg bot">Aduh, koneksi ke GawatIn AI terputus. Pastikan terminal app.py sedang menyala ya!</div>`;
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+<script>
+    function tambahBakteriLucu() {
+        const container = document.querySelector('.test-section');
+        if (!container) return;
+
+        const fileBakteri = ['bakteri 1.png', 'bakteri 2.png', 'bakteri 3.png'];
+        const posisiTerpakai = []; // Menyimpan koordinat bakteri yang sudah muncul
+
+        fileBakteri.forEach((file, index) => {
+            let x, y, overlap;
+            let percobaan = 0;
+
+            // Loop untuk mencari posisi yang tidak menumpuk
+            do {
+                overlap = false;
+                // Tetap fokus di area kanan (60-90%) agar tidak menutupi teks
+                x = Math.random() * 30 + 60; 
+                y = Math.random() * 60 + 10;
+
+                // Cek apakah posisi ini terlalu dekat dengan bakteri lain (jarak minimal 15%)
+                for (let pos of posisiTerpakai) {
+                    let jarak = Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.y - y, 2));
+                    if (jarak < 15) { 
+                        overlap = true; 
+                        break;
+                    }
+                }
+                percobaan++;
+            } while (overlap && percobaan < 100);
+
+            posisiTerpakai.push({ x: x, y: y });
+
+            const img = document.createElement('img');
+            img.src = "{{ url_for('static', filename='') }}" + file;
+            img.className = 'floating-bakteri';
+            img.style.top = y + '%';
+            img.style.left = x + '%';
+            img.style.animationDelay = (index * 1.5) + 's';
+            
+            container.style.position = 'relative';
+            container.appendChild(img);
+        });
+    }
+
+    window.onload = tambahBakteriLucu;
+</script></body>
+</html>
