@@ -1,0 +1,22 @@
+# Folder environment (jangan diupload karena berat)
+venv/
+env/
+.env
+
+# Folder sampah sistem & cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# File sistem (khusus kalau kamu pakai Mac atau Windows)
+.DS_Store
+Thumbs.db
+
+# Folder IDE (biar file setting VS Code nggak ikutan)
+.vscode/
+.idea/
+
+# Model AI (Opsional: kalau file model .pkl kamu berukuran ratusan MB,
+# sebaiknya jangan diupload ke GitHub gratisan, kecuali pakai Git LFS)
+*.pkl
